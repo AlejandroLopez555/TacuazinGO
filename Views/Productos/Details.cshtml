@@ -1,0 +1,168 @@
+﻿@model TacuazinGO.Models.Producto
+
+@{
+    ViewData["Title"] = "Detalles del Producto";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h4> Detalles del Producto</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Tarjeta de Informacion Principal -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <h3 class="text-primary">@Model.Nombre</h3>
+                            @if (Model.Categoria != null)
+                            {
+                                <span class="badge bg-secondary fs-6">@Model.Categoria.Nombre</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-light text-dark fs-6">Sin categoría</span>
+                            }
+                        </div>
+                        <div class="col-md-4 text-end">
+                            @if (Model.Stock < 10)
+                            {
+                                <span class="badge bg-danger fs-6">⚠️ Stock Bajo</span>
+                            }
+                            else if (Model.Stock < 20)
+                            {
+                                <span class="badge bg-warning fs-6">📦 Stock Medio</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success fs-6">✅ Stock Suficiente</span>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Estadisticas del Producto -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card text-center border-primary">
+                                <div class="card-body">
+                                    <h5 class="card-title text-primary"> Precio</h5>
+                                    <p class="card-text h4">$@Model.Precio.ToString("N2")</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-center border-success">
+                                <div class="card-body">
+                                    <h5 class="card-title text-success"> Stock</h5>
+                                    <p class="card-text h4">@Model.Stock unidades</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-center border-info">
+                                <div class="card-body">
+                                    <h5 class="card-title text-info"> Valor Total</h5>
+                                    <p class="card-text h4">$@((Model.Precio * Model.Stock).ToString("N2"))</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informacion Detallada -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5> Información Detallada</h5>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row">
+                                <dt class="col-sm-4">ID del Producto:</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge bg-dark">#@Model.Id</span>
+                                </dd>
+
+                                <dt class="col-sm-4">Nombre:</dt>
+                                <dd class="col-sm-8">@Model.Nombre</dd>
+
+                                <dt class="col-sm-4">Precio Unitario:</dt>
+                                <dd class="col-sm-8">
+                                    <span class="h5 text-success">$@Model.Precio.ToString("N2")</span>
+                                </dd>
+
+                                <dt class="col-sm-4">Stock Actual:</dt>
+                                <dd class="col-sm-8">
+                                    <div class="progress" style="height: 25px;">
+                                        @{
+                                            var maxStock = Math.Max(100, Model.Stock);
+                                            var porcentajeStock = (Model.Stock * 100) / maxStock;
+                                        }
+                                        <div class="progress-bar @(Model.Stock < 10 ? "bg-danger" : Model.Stock < 20 ? "bg-warning" : "bg-success")"
+                                             style="width: @porcentajeStock%"
+                                             role="progressbar">
+                                            @Model.Stock unidades
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">Capacidad: @maxStock unidades</small>
+                                </dd>
+
+                                <dt class="col-sm-4">Categoría:</dt>
+                                <dd class="col-sm-8">
+                                    @if (Model.Categoria != null)
+                                    {
+                                        <span class="badge bg-secondary fs-6">@Model.Categoria.Nombre</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">No asignada</span>
+                                    }
+                                </dd>
+
+                                <dt class="col-sm-4">Valor en Inventario:</dt>
+                                <dd class="col-sm-8">
+                                    <span class="h5 text-info">$@((Model.Precio * Model.Stock).ToString("N2"))</span>
+                                    <br>
+                                    <small class="text-muted">(Precio × Stock)</small>
+                                </dd>
+
+                                <dt class="col-sm-4">Estado:</dt>
+                                <dd class="col-sm-8">
+                                    @if (Model.Stock == 0)
+                                    {
+                                        <span class="badge bg-danger fs-6">🔴 Agotado</span>
+                                    }
+                                    else if (Model.Stock < 10)
+                                    {
+                                        <span class="badge bg-warning fs-6">🟡 Stock Bajo</span>
+                                    }
+                                    else if (Model.Stock < 20)
+                                    {
+                                        <span class="badge bg-info fs-6">🔵 Stock Medio</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success fs-6">🟢 Stock Suficiente</span>
+                                    }
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <!-- Acciones -->
+                    <div class="mt-4">
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Index" class="btn btn-secondary me-md-2">
+                                 Volver a la Lista
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary me-md-2">
+                                 Editar Producto
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                                 Eliminar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

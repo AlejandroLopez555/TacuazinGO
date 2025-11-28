@@ -1,0 +1,191 @@
+﻿@model TacuazinGO.Models.ArchivoFinanciero
+
+@{
+    ViewData["Title"] = "Detalles del Archivo";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-4">
+                <span class="text-custom-gray">📋 Detalles del</span><span class="text-custom-pink">Archivo</span>
+            </h1>
+            <p class="lead text-muted">Información completa del período archivado</p>
+        </div>
+    </div>
+
+    <!-- Botones de navegación -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <a href="/Home/ArchivosHistoricos" class="btn btn-primary me-2">
+                📚 Volver a Archivos
+            </a>
+            <a href="/Home/Reportes" class="btn btn-outline-secondary me-2">
+                📊 Ir a Reportes
+            </a>
+            <button class="btn btn-outline-success" onclick="exportarDetalles()">
+                📄 Exportar Reporte
+            </button>
+        </div>
+    </div>
+
+    <!-- Resumen del archivo -->
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-gradient-custom text-white">
+                    <h4 class="mb-0">📊 Resumen del Período</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Información del Archivo</h5>
+                            <p><strong>Nombre:</strong> @Model.NombreArchivo</p>
+                            <p><strong>Fecha de archivado:</strong> @Model.FechaArchivado.ToString("dd/MM/yyyy HH:mm")</p>
+                            @if (!string.IsNullOrEmpty(Model.Descripcion))
+                            {
+                                <p><strong>Descripción:</strong> @Model.Descripcion</p>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.UsuarioId))
+                            {
+                                <p><strong>Archivado por:</strong> @Model.UsuarioId</p>
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Estadísticas Financieras</h5>
+                            <div class="mb-2">
+                                <span class="text-success fw-bold">$@Model.TotalVentasArchivadas.ToString("N2")</span>
+                                <small class="text-muted"> en @Model.CantidadVentasArchivadas ventas</small>
+                            </div>
+                            <div class="mb-2">
+                                <span class="text-warning fw-bold">$@Model.TotalGastosArchivados.ToString("N2")</span>
+                                <small class="text-muted"> en @Model.CantidadGastosArchivados gastos</small>
+                            </div>
+                            <div class="mb-2">
+                                @{
+                                    var balance = Model.TotalVentasArchivadas - Model.TotalGastosArchivados;
+                                    var balanceClass = balance >= 0 ? "text-success" : "text-danger";
+                                }
+                                <span class="fw-bold @balanceClass">$@balance.ToString("N2")</span>
+                                <small class="text-muted"> balance total</small>
+                            </div>
+                            @{
+                                var rentabilidad = Model.TotalVentasArchivadas > 0 ?
+                                (balance / Model.TotalVentasArchivadas) * 100 : 0;
+                            }
+                            <div>
+                                <span class="fw-bold @(rentabilidad >= 0 ? "text-success" : "text-danger")">
+                                    @rentabilidad.ToString("N1")%
+                                </span>
+                                <small class="text-muted"> rentabilidad</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">📈 Métricas Rápidas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <div class="mb-3">
+                            <h3 class="@balanceClass">$@balance.ToString("N2")</h3>
+                            <small class="text-muted">Balance Neto</small>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <h5 class="text-success">@Model.CantidadVentasArchivadas</h5>
+                                <small class="text-muted">Ventas</small>
+                            </div>
+                            <div class="col-6">
+                                <h5 class="text-warning">@Model.CantidadGastosArchivados</h5>
+                                <small class="text-muted">Gastos</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nota informativa -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h6>💡 Información</h6>
+                <p class="mb-0">
+                    Este archivo contiene los datos del período archivado el <strong>@Model.FechaArchivado.ToString("dd/MM/yyyy")</strong>.
+                    Los datos están preservados para consultas históricas y análisis comparativos.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+                function exportarDetalles() {
+            Swal.fire({
+                title: 'Exportando Detalles',
+                html: `
+                    <div class="text-start">
+                        <p>Selecciona el formato de exportación para <strong>@Model.NombreArchivo</strong>:</p>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="exportFormat" id="pdfFormat" value="pdf" checked>
+                            <label class="form-check-label" for="pdfFormat">
+                                📄 PDF - Reporte completo
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="exportFormat" id="excelFormat" value="excel">
+                            <label class="form-check-label" for="excelFormat">
+                                📊 Excel - Datos tabulares
+                            </label>
+                        </div>
+                    </div>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Exportar',
+                cancelButtonText: 'Cancelar',
+                preConfirm: () => {
+                    const format = document.querySelector('input[name="exportFormat"]:checked')?.value;
+                    return format ? { format } : Promise.reject(new Error('Selecciona un formato'));
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    generarReporteDetalles(@Model.Id, result.value.format);
+                }
+            });
+        }
+
+        function generarReporteDetalles(archivoId, formato) {
+            // Mostrar loading
+            Swal.fire({
+                title: 'Generando Reporte',
+                text: 'Preparando archivo histórico...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            if (formato === 'pdf') {
+                generarPDFArchivo(archivoId);
+            } else {
+                Swal.fire({
+                    title: 'Función en Desarrollo',
+                    text: 'La exportación a Excel estará disponible pronto',
+                    icon: 'info',
+                    confirmButtonText: 'Entendido'
+                });
+            }
+        }
+
+        // Reutilizar la misma función de PDF (copiar la función generarPDFArchivo completa aquí)
+    </script>
+}

@@ -1,0 +1,230 @@
+﻿@{
+    ViewData["Title"] = "Registrar Venta";
+}
+
+<div class="container">
+    <h1>💰 Registrar Nueva Venta</h1>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Productos disponibles -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5> Productos Disponibles</h5>
+                </div>
+                <div class="card-body">
+                    <div id="productosLista" class="row">
+                        
+                    </div>
+                </div>
+            </div>
+
+            <!-- Productos en la Venta -->
+            <div class="card">
+                <div class="card-header">
+                    <h5> Productos en la Venta</h5>
+                </div>
+                <div class="card-body">
+                    <div id="carritoVenta">
+                        <p class="text-muted">No hay productos en la venta</p>
+                    </div>
+                    <div class="mt-3">
+                        <h5>Total: $<span id="totalVenta">0.00</span></h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Acciones -->
+            <div class="card">
+                <div class="card-header">
+                    <h5> Acciones</h5>
+                </div>
+                <div class="card-body">
+                    <button id="btnFinalizarVenta" class="btn btn-success w-100 mb-2" disabled>
+                         Finalizar Venta
+                    </button>
+                    <button id="btnCancelarVenta" class="btn btn-secondary w-100">
+                         Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let carrito = [];
+        let productos = [];
+
+        // Aqui se cargan los productos al iniciar
+        async function cargarProductos() {
+            try {
+                const response = await fetch('/api/ProductosApi');
+                productos = await response.json();
+                mostrarProductos();
+            } catch (error) {
+                console.error('Error cargando productos:', error);
+            }
+        }
+
+        // Mostrar productos disponibles
+        function mostrarProductos() {
+            const container = document.getElementById('productosLista');
+            container.innerHTML = '';
+
+            productos.forEach(producto => {
+                if (producto.stock > 0) {
+                    const productoHTML = `
+                        <div class="col-md-6 mb-2">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6>${producto.nombre}</h6>
+                                    <p class="mb-1">Precio: $${producto.precio}</p>
+                                    <p class="mb-1">Stock: ${producto.stock}</p>
+                                    <button class="btn btn-sm btn-primary"
+                                            onclick="agregarAlCarrito(${producto.id})"
+                                            ${producto.stock === 0 ? 'disabled' : ''}>
+                                        ➕ Agregar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += productoHTML;
+                }
+            });
+        }
+
+        // Agregar producto al carrito
+        function agregarAlCarrito(productoId) {
+            const producto = productos.find(p => p.id === productoId);
+            const itemExistente = carrito.find(item => item.productoId === productoId);
+
+            if (itemExistente) {
+                if (itemExistente.cantidad < producto.stock) {
+                    itemExistente.cantidad++;
+                } else {
+                    alert('No hay suficiente stock');
+                    return;
+                }
+            } else {
+                carrito.push({
+                    productoId: producto.id,
+                    nombre: producto.nombre,
+                    precio: producto.precio,
+                    cantidad: 1,
+                    stockDisponible: producto.stock
+                });
+            }
+
+            actualizarCarrito();
+        }
+
+        // Aqui se Actualiza la vista del carrito
+        function actualizarCarrito() {
+            const container = document.getElementById('carritoVenta');
+            const totalElement = document.getElementById('totalVenta');
+            const btnFinalizar = document.getElementById('btnFinalizarVenta');
+
+            if (carrito.length === 0) {
+                container.innerHTML = '<p class="text-muted">No hay productos en la venta</p>';
+                totalElement.textContent = '0.00';
+                btnFinalizar.disabled = true;
+                return;
+            }
+
+            let html = '';
+            let total = 0;
+
+            carrito.forEach((item, index) => {
+                const subtotal = item.cantidad * item.precio;
+                total += subtotal;
+
+                html += `
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                        <div>
+                            <strong>${item.nombre}</strong><br>
+                            <small>$${item.precio} x ${item.cantidad} = $${subtotal.toFixed(2)}</small>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-outline-danger" onclick="eliminarDelCarrito(${index})">
+                                
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            totalElement.textContent = total.toFixed(2);
+            btnFinalizar.disabled = false;
+        }
+
+        // Eliminar producto del carrito
+        function eliminarDelCarrito(index) {
+            carrito.splice(index, 1);
+            actualizarCarrito();
+        }
+
+        // Finalizar venta
+        document.getElementById('btnFinalizarVenta').addEventListener('click', async function() {
+            if (carrito.length === 0) {
+                alert('No hay productos en la venta');
+                return;
+            }
+
+            const venta = {
+                fecha: new Date().toISOString(),
+                total: parseFloat(document.getElementById('totalVenta').textContent),
+                detalles: carrito.map(item => ({
+                    productoId: item.productoId,
+                    cantidad: item.cantidad,
+                    precioUnitario: item.precio
+                }))
+            };
+
+            try {
+                const response = await fetch('/api/VentasApi', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(venta)
+                });
+
+                        if (response.ok) {
+            const resultado = await response.json();
+            alert('✅ ' + resultado.mensaje);
+            carrito = [];
+            actualizarCarrito();
+            await cargarProductos();
+        } else {
+                    const error = await response.text();
+                    alert('❌ Error: ' + error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error de conexión');
+            }
+        });
+
+        // Cancelar venta
+        document.getElementById('btnCancelarVenta').addEventListener('click', function() {
+            if (confirm('¿Estás seguro de cancelar la venta?')) {
+                carrito = [];
+                actualizarCarrito();
+            }
+        });
+
+        // Navegación
+        document.getElementById('btnCancelarVenta').addEventListener('click', function() {
+            window.location.href = '/';
+        });
+
+        // Inicializar
+        cargarProductos();
+    </script>
+}

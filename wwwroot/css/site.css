@@ -1,0 +1,146 @@
+﻿html {
+    font-size: 14px;
+    position: relative;
+    min-height: 100%;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+/* LAYOUT PARA FOOTER FIJO */
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    flex: 1;
+}
+
+/* FOOTER SIEMPRE ABAJO */
+.footer-custom {
+    background-color: #f8f9fa !important;
+    border-top: 1px solid #dee2e6;
+    margin-top: auto; /* Esto empuja el footer hacia abajo */
+    width: 100%;
+}
+
+/* 🎨 NAVBAR PERSONALIZADO - NUEVO ESTILO */
+.navbar-custom {
+    background-color: #e9ecef !important; /* Gris más oscuro */
+    border-bottom: 3px solid #e8b4b4 !important; /* Rosa/color piel */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+    font-weight: bold;
+    color: #495057 !important;
+}
+
+.nav-link-custom {
+    color: #495057 !important;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+    .nav-link-custom:hover {
+        color: #d63384 !important; /* Rosa más intenso al hover */
+        transform: translateY(-1px);
+    }
+
+.nav-item.active .nav-link-custom {
+    color: #d63384 !important; /* Rosa activo */
+    font-weight: 600;
+}
+
+/* Asegurar que el menú colapsado se vea bien */
+.navbar-collapse {
+    text-align: center;
+}
+
+@media (max-width: 576px) {
+    .navbar-nav {
+        padding: 10px 0;
+    }
+
+    .nav-item {
+        margin: 5px 0;
+    }
+
+    /* Asegurar que el toggler sea visible */
+    .navbar-toggler {
+        border: 1px solid rgba(0,0,0,0.1);
+        padding: 0.25rem 0.5rem;
+    }
+
+    .navbar-custom {
+        border-bottom: 2px solid #e8b4b4 !important; /* Línea más fina en móviles */
+    }
+}
+/* 🎨 COLORES PERSONALIZADOS PARA EL LOGO */
+.text-custom-gray {
+    color: #495057 !important; /* Mismo gris del navbar */
+    font-weight: 700;
+}
+
+.text-custom-pink {
+    color: #e8b4b4 !important; /* Mismo rosa/color piel del borde del navbar */
+    font-weight: 700;
+}
+
+/* 🦡 ESTILOS ADICIONALES PARA COHERENCIA VISUAL */
+.bg-gradient-custom {
+    background: linear-gradient(135deg, #495057 0%, #6c757d 100%) !important;
+}
+
+.border-custom {
+    border-color: #e8b4b4 !important;
+}
+
+.btn-custom-export {
+    background-color: #e8b4b4 !important;
+    border-color: #e8b4b4 !important;
+    color: #495057 !important;
+    font-weight: 500;
+}
+
+    .btn-custom-export:hover {
+        background-color: #d63384 !important;
+        border-color: #d63384 !important;
+        color: white !important;
+    }
+
+.table-custom-header {
+    background-color: #495057 !important;
+    color: white !important;
+}
+
+.bg-custom-secondary {
+    background-color: #6c757d !important;
+}
+
+.bg-custom-warning {
+    background-color: #fff3cd !important;
+    color: #856404 !important;
+}
+
+.bg-custom-danger {
+    background-color: #f8d7da !important;
+    color: #721c24 !important;
+}
+
+.alert-custom-info {
+    background-color: #e8f4f8 !important;
+    border-color: #b8d4e0 !important;
+    color: #495057 !important;
+}

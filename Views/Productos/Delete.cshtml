@@ -1,0 +1,56 @@
+﻿@model TacuazinGO.Models.Producto
+
+@{
+    ViewData["Title"] = "Eliminar Producto";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4> Eliminar Producto</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="text-danger">¿Estás seguro que quieres eliminar este producto?</h5>
+
+                    <div class="alert alert-warning mt-3">
+                        <h6> Información del Producto:</h6>
+                        <dl class="row">
+                            <dt class="col-sm-4">Nombre:</dt>
+                            <dd class="col-sm-8">@Html.DisplayFor(model => model.Nombre)</dd>
+
+                            <dt class="col-sm-4">Precio:</dt>
+                            <dd class="col-sm-8">$@Html.DisplayFor(model => model.Precio)</dd>
+
+                            <dt class="col-sm-4">Stock:</dt>
+                            <dd class="col-sm-8">@Html.DisplayFor(model => model.Stock) unidades</dd>
+
+                            <dt class="col-sm-4">Categoría:</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.Categoria != null)
+                                {
+                                    <span class="badge bg-secondary">@Model.Categoria.Nombre</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Sin categoría</span>
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+
+                    <form asp-action="Delete" class="mt-4">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Index" class="btn btn-secondary me-md-2">← Cancelar</a>
+                            <button type="submit" class="btn btn-danger">
+                                 Si, Eliminar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

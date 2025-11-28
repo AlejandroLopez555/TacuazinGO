@@ -1,0 +1,685 @@
+﻿@model TacuazinGO.ViewModels.ReportesViewModel
+
+@{
+    ViewData["Title"] = "Reportes TacuazinGO";
+}
+
+<div class="container">
+    <h1>📊 Reportes Financieros</h1>
+
+    <!--  seccin de botones -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <button id="btnExportarPDF" class="btn btn-danger me-2">
+                📄 Exportar a PDF
+            </button>
+            <button id="btnGenerarReporte" class="btn btn-success me-2">
+                📈 Generar Reporte Completo
+            </button>
+            <button id="btnArchivarTodo" class="btn btn-outline-warning me-2">
+                📁 Archivar Período Actual
+            </button>
+            
+            <a href="/Home/ArchivosHistoricos" class="btn btn-outline-info me-2">
+                📚 Ver Archivos Históricos
+            </a>
+            <a href="/" class="btn btn-primary">← Volver al Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Bloque del Resumen General -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title"> Ingresos</h5>
+                    <p class="card-text h3">$@Model.TotalVentas.ToString("N2")</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title"> Gastos</h5>
+                    <p class="card-text h3">$@Model.TotalGastos.ToString("N2")</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white @(Model.Balance >= 0 ? "bg-primary" : "bg-danger")">
+                <div class="card-body">
+                    <h5 class="card-title"> Balance</h5>
+                    <p class="card-text h3">$@Model.Balance.ToString("N2")</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title"> Rentabilidad</h5>
+                    <p class="card-text h3">@(Model.TotalVentas > 0 ? ((Model.Balance / Model.TotalVentas) * 100).ToString("N1") : "0")%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Block de los Graficos Interactivos con Chart.js -->
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5> Ventas Mensuales</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="ventasChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5> Gastos por Categoría</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="gastosChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- block Grafico de Balance -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5> Balance Mensual (Ventas vs Gastos)</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="balanceChart" width="400" height="150"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tablas  -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5> Últimas Ventas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive" style="max-height: 300px;">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Total</th>
+                                    <th>Productos</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var venta in Model.Ventas.OrderByDescending(v => v.Fecha).Take(10))
+                                {
+                                    <tr>
+                                        <td>@venta.Fecha.ToString("dd/MM/yyyy")</td>
+                                        <td>$@venta.Total.ToString("N2")</td>
+                                        <td>@venta.CantidadProductos</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5> Últimos Gastos</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive" style="max-height: 300px;">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Descripción</th>
+                                    <th>Monto</th>
+                                    <th>Categoría</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var gasto in Model.Gastos.OrderByDescending(g => g.Fecha).Take(10))
+                                {
+                                    <tr>
+                                        <td>@gasto.Fecha.ToString("dd/MM/yyyy")</td>
+                                        <td>@gasto.Descripcion</td>
+                                        <td>$@gasto.Monto.ToString("N2")</td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(gasto.Categoria))
+                                            {
+                                                <span class="badge bg-secondary">@gasto.Categoria</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Sin categoría</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Datos para los graficos  CON VALIDACION
+        const ventasPorMes = @Html.Raw(Json.Serialize(Model.VentasPorMes ?? new Dictionary<int, decimal>()));
+        const gastosPorCategoria = @Html.Raw(Json.Serialize(Model.GastosPorCategoria ?? new Dictionary<string, decimal>()));
+
+        console.log('Ventas por mes:', ventasPorMes);
+        console.log('Gastos por categoría:', gastosPorCategoria);
+
+        // Colores de los graficos con su respectiva referencia (para guiarse mejor por si se debe cambiar )
+        const colors = [
+            'rgba(40, 167, 69, 0.8)',   // Verde
+            'rgba(255, 193, 7, 0.8)',   // Amarillo
+            'rgba(0, 123, 255, 0.8)',   // Azul
+            'rgba(220, 53, 69, 0.8)',   // Rojo
+            'rgba(111, 66, 193, 0.8)',  // Morado
+            'rgba(253, 126, 20, 0.8)',  // Naranja
+            'rgba(32, 201, 151, 0.8)',  // Verde agua
+            'rgba(233, 236, 239, 0.8)'  // Gris
+        ];
+
+        // Funcion para inicializar graficos
+        function inicializarGraficos() {
+            // 1.Grafico de Ventas Mensuales  CON VALIDACION
+            const ventasCtx = document.getElementById('ventasChart');
+            if (ventasCtx) {
+                window.ventasChart = new Chart(ventasCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(ventasPorMes).length > 0 ?
+                            Object.keys(ventasPorMes).map(mes => `Mes ${mes}`) :
+                            ['Sin datos'],
+                        datasets: [{
+                            label: 'Ventas $',
+                            data: Object.keys(ventasPorMes).length > 0 ?
+                                Object.values(ventasPorMes) : [0],
+                            backgroundColor: colors[0],
+                            borderColor: colors[0].replace('0.8', '1'),
+                            borderWidth: 2,
+                            borderRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Ventas: $${context.raw.toFixed(2)}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            //  Grafico de Gastos por Categoría - CON VALIDACION
+            const gastosCtx = document.getElementById('gastosChart');
+            if (gastosCtx) {
+                window.gastosChart = new Chart(gastosCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(gastosPorCategoria).length > 0 ?
+                            Object.keys(gastosPorCategoria) :
+                            ['Sin gastos'],
+                        datasets: [{
+                            data: Object.keys(gastosPorCategoria).length > 0 ?
+                                Object.values(gastosPorCategoria) : [1],
+                            backgroundColor: colors,
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 12,
+                                    padding: 15
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = total > 0 ? Math.round((context.raw / total) * 100) : 0;
+                                        return `${context.label}: $${context.raw.toFixed(2)} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            //  Grafico de Balance - CON VALIDACION
+            const balanceCtx = document.getElementById('balanceChart');
+            if (balanceCtx) {
+                const meses = Object.keys(ventasPorMes).length > 0 ?
+                    Object.keys(ventasPorMes).map(mes => `Mes ${mes}`) :
+                    ['Sin datos'];
+
+                // Usar el valor de TotalGastos serializado correctamente
+                const valorGastos = @Html.Raw(Json.Serialize(Model.TotalGastos));
+
+                window.balanceChart = new Chart(balanceCtx, {
+                    type: 'line',
+                    data: {
+                        labels: meses,
+                        datasets: [
+                            {
+                                label: 'Ventas',
+                                data: Object.keys(ventasPorMes).length > 0 ?
+                                    Object.values(ventasPorMes) : [0],
+                                borderColor: colors[0],
+                                backgroundColor: colors[0].replace('0.8', '0.1'),
+                                tension: 0.4,
+                                fill: true,
+                                borderWidth: 3
+                            },
+                            {
+                                label: 'Gastos',
+                                data: Array(meses.length).fill(valorGastos),
+                                borderColor: colors[1],
+                                backgroundColor: colors[1].replace('0.8', '0.1'),
+                                tension: 0.4,
+                                fill: true,
+                                borderWidth: 3
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: $${context.raw.toFixed(2)}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Esperar a que el DOM esté listo para inicializar gráficos y asignar event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            inicializarGraficos();
+
+            // Boton Exportar PDF con jsPDF
+            document.getElementById('btnExportarPDF')?.addEventListener('click', function() {
+                Swal.fire({
+                    title: 'Generando PDF',
+                    html: `
+                        <div class="text-start">
+                            <p>Selecciona el tipo de reporte:</p>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="reportType" id="quickReport" value="quick" checked>
+                                <label class="form-check-label" for="quickReport">
+                                    Reporte Rápido (Gráficos + Resumen)
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="reportType" id="detailedReport" value="detailed">
+                                <label class="form-check-label" for="detailedReport">
+                                    Reporte Detallado (Tablas completas)
+                                </label>
+                            </div>
+                        </div>
+                    `,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Generar PDF',
+                    cancelButtonText: 'Cancelar',
+                    preConfirm: () => {
+                        const reportType = document.querySelector('input[name="reportType"]:checked')?.value;
+                        return reportType ? { reportType } : Promise.reject(new Error('Selecciona un tipo de reporte'));
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        generarPDF(result.value.reportType);
+                    }
+                }).catch(error => {
+                    Swal.showValidationMessage(error.message);
+                });
+            });
+
+            // Boton Generar Reporte
+            document.getElementById('btnGenerarReporte')?.addEventListener('click', function() {
+                Swal.fire({
+                    title: 'Generando Reporte',
+                    text: 'Procesando datos financieros...',
+                    icon: 'info',
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    Swal.fire({
+                        title: 'Reporte Generado',
+                        html: `
+                            <div class="text-start">
+                                <p><strong>Resumen Financiero:</strong></p>
+                                <p>• Ingresos: $@Model.TotalVentas.ToString("N2")</p>
+                                <p>• Gastos: $@Model.TotalGastos.ToString("N2")</p>
+                                <p>• Balance: $@Model.Balance.ToString("N2")</p>
+                                <p>• Rentabilidad: @(Model.TotalVentas > 0 ? ((Model.Balance / Model.TotalVentas) * 100).ToString("N1") : "0")%</p>
+                            </div>
+                        `,
+                        icon: 'success',
+                        confirmButtonText: 'Excelente'
+                    });
+                });
+            });
+        });
+
+        // Funcion principal para generar PDF
+        function generarPDF(tipoReporte = 'quick') {
+
+            if (typeof window.jspdf === 'undefined' || typeof html2canvas === 'undefined') {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Las librerías de PDF no están cargadas correctamente',
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
+                });
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Mostrar loading
+            Swal.fire({
+                title: 'Generando PDF',
+                text: 'Por favor espera...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            try {
+                // Configuracion del documento
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                let yPosition = 20;
+
+                // Encabezado del PDF
+                doc.setFontSize(20);
+                doc.setTextColor(40, 167, 69);
+                doc.text('TACUAZIN GO - REPORTE FINANCIERO', pageWidth / 2, yPosition, { align: 'center' });
+
+                doc.setFontSize(12);
+                doc.setTextColor(100, 100, 100);
+                yPosition += 10;
+                doc.text(`Generado el: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, pageWidth / 2, yPosition, { align: 'center' });
+
+                yPosition += 15;
+
+                // Resumen Ejecutivo
+                doc.setFontSize(16);
+                doc.setTextColor(0, 0, 0);
+                doc.text('RESUMEN EJECUTIVO', 20, yPosition);
+                yPosition += 10;
+
+                doc.setFontSize(10);
+                doc.setTextColor(0, 0, 0);
+
+                // Datos del resumen
+                const resumenData = [
+                    { label: 'Ingresos Totales', value: `$${@Model.TotalVentas.ToString("N2")}` },
+                    { label: 'Gastos Totales', value: `$${@Model.TotalGastos.ToString("N2")}` },
+                    { label: 'Balance', value: `$${@Model.Balance.ToString("N2")}` },
+                    { label: 'Rentabilidad', value: `@(Model.TotalVentas > 0 ? ((Model.Balance / Model.TotalVentas) * 100).ToString("N1") : "0")%` },
+                    { label: 'Total Ventas', value: `@Model.Ventas.Count transacciones` },
+                    { label: 'Total Gastos', value: `@Model.Gastos.Count registros` }
+                ];
+
+                resumenData.forEach(item => {
+                    if (yPosition > pageHeight - 40) {
+                        doc.addPage();
+                        yPosition = 20;
+                    }
+
+                    doc.setTextColor(0, 0, 0);
+                    doc.text(item.label, 25, yPosition);
+                    doc.setTextColor(40, 167, 69);
+                    doc.text(item.value, pageWidth - 25, yPosition, { align: 'right' });
+                    yPosition += 8;
+                });
+
+                yPosition += 10;
+
+                if (tipoReporte === 'detailed') {
+                    generarReporteDetallado(doc, yPosition);
+                } else {
+                    generarReporteRapido(doc, yPosition);
+                }
+
+                // Finalizar y descargar
+                setTimeout(() => {
+                    doc.save(`Reporte_TacuazinGO_${new Date().toISOString().split('T')[0]}.pdf`);
+
+                    Swal.fire({
+                        title: 'PDF Generado',
+                        text: 'El reporte se ha descargado exitosamente',
+                        icon: 'success',
+                        confirmButtonText: 'Perfecto'
+                    });
+                }, 1500);
+
+            } catch (error) {
+                console.error('Error generando PDF:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Ocurrió un error al generar el PDF',
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
+                });
+            }
+        }
+
+        // Funcion para reporte rapido (graficos como imagenes)
+        function generarReporteRapido(doc, startY) {
+            let yPosition = startY;
+            const pageWidth = doc.internal.pageSize.getWidth();
+
+            doc.setFontSize(14);
+            doc.setTextColor(0, 0, 0);
+            doc.text(' GRÁFICOS FINANCIEROS', 20, yPosition);
+            yPosition += 10;
+
+            //Aqui convertimos los graficos a imágenes y agregar al PDF.
+            const charts = ['ventasChart', 'gastosChart', 'balanceChart'];
+            let chartIndex = 0;
+
+            function addNextChart() {
+                if (chartIndex >= charts.length) {
+                    return;
+                }
+
+                const chartId = charts[chartIndex];
+                const chartCanvas = document.getElementById(chartId);
+
+                html2canvas(chartCanvas).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+
+                    if (yPosition + 80 > doc.internal.pageSize.getHeight()) {
+                        doc.addPage();
+                        yPosition = 20;
+                    }
+
+                    // Titulo del grafico
+                    doc.setFontSize(10);
+                    doc.setTextColor(100, 100, 100);
+                    let chartTitle = '';
+                    switch(chartId) {
+                        case 'ventasChart': chartTitle = 'Ventas Mensuales'; break;
+                        case 'gastosChart': chartTitle = 'Gastos por Categoría'; break;
+                        case 'balanceChart': chartTitle = 'Balance Ventas vs Gastos'; break;
+                    }
+                    doc.text(chartTitle, 20, yPosition);
+                    yPosition += 5;
+
+                    // Imagen del grafico
+                    const imgWidth = pageWidth - 40;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    doc.addImage(imgData, 'PNG', 20, yPosition, imgWidth, imgHeight);
+                    yPosition += imgHeight + 15;
+
+                    chartIndex++;
+                    addNextChart();
+                });
+            }
+
+            addNextChart();
+        }
+
+        // Funcion para reporte detallado (tablas completas)
+        function generarReporteDetallado(doc, startY) {
+            let yPosition = startY;
+            const pageWidth = doc.internal.pageSize.getWidth();
+
+            // Ventas detalladas
+            doc.setFontSize(14);
+            doc.setTextColor(0, 0, 0);
+            doc.text(' DETALLE DE VENTAS', 20, yPosition);
+            yPosition += 10;
+
+            doc.setFontSize(8);
+            doc.setTextColor(100, 100, 100);
+
+            // Encabezado tabla ventas
+            doc.text('Fecha', 25, yPosition);
+            doc.text('Total', pageWidth - 50, yPosition, { align: 'right' });
+            doc.text('Productos', pageWidth - 20, yPosition, { align: 'right' });
+            yPosition += 5;
+
+            doc.line(20, yPosition, pageWidth - 20, yPosition);
+            yPosition += 8;
+
+            // Datos de ventas
+            const ventas = @Html.Raw(Json.Serialize(Model.Ventas.OrderByDescending(v => v.Fecha).Take(20)));
+            ventas.forEach(venta => {
+                if (yPosition > doc.internal.pageSize.getHeight() - 20) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+
+                const fecha = new Date(venta.fecha).toLocaleDateString();
+                doc.setTextColor(0, 0, 0);
+                doc.text(fecha, 25, yPosition);
+                doc.text(`$${venta.total.toFixed(2)}`, pageWidth - 50, yPosition, { align: 'right' });
+                doc.text(venta.cantidadProductos.toString(), pageWidth - 20, yPosition, { align: 'right' });
+                yPosition += 6;
+            });
+
+            yPosition += 10;
+
+            // Gastos detallados
+            if (yPosition > doc.internal.pageSize.getHeight() - 50) {
+                doc.addPage();
+                yPosition = 20;
+            }
+
+            doc.setFontSize(14);
+            doc.setTextColor(0, 0, 0);
+            doc.text(' DETALLE DE GASTOS', 20, yPosition);
+            yPosition += 10;
+
+            doc.setFontSize(8);
+            doc.setTextColor(100, 100, 100);
+
+            // Encabezado tabla gastos
+            doc.text('Fecha', 25, yPosition);
+            doc.text('Descripción', 60, yPosition);
+            doc.text('Monto', pageWidth - 30, yPosition, { align: 'right' });
+            doc.text('Categoría', pageWidth - 10, yPosition, { align: 'right' });
+            yPosition += 5;
+
+            doc.line(20, yPosition, pageWidth - 20, yPosition);
+            yPosition += 8;
+
+            // Datos de gastos
+            const gastos = @Html.Raw(Json.Serialize(Model.Gastos.OrderByDescending(g => g.Fecha).Take(20)));
+            gastos.forEach(gasto => {
+                if (yPosition > doc.internal.pageSize.getHeight() - 20) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+
+                const fecha = new Date(gasto.fecha).toLocaleDateString();
+                const descripcion = gasto.descripcion.length > 30 ? gasto.descripcion.substring(0, 30) + '...' : gasto.descripcion;
+                const categoria = gasto.categoria || 'Sin categoría';
+
+                doc.setTextColor(0, 0, 0);
+                doc.text(fecha, 25, yPosition);
+                doc.text(descripcion, 60, yPosition);
+                doc.text(`$${gasto.monto.toFixed(2)}`, pageWidth - 30, yPosition, { align: 'right' });
+                doc.setTextColor(100, 100, 100);
+                doc.text(categoria, pageWidth - 10, yPosition, { align: 'right' });
+                yPosition += 6;
+            });
+
+            // Pie de pagina
+            doc.setFontSize(8);
+            doc.setTextColor(150, 150, 150);
+            doc.text('Reporte generado automáticamente por TacuazinGO - Sistema de Gestión', pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+        }
+    </script>
+}

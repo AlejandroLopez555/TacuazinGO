@@ -1,0 +1,115 @@
+﻿@model IEnumerable<TacuazinGO.Models.Categoria>
+
+@{
+    ViewData["Title"] = "Gestión de Categorías";
+}
+
+<div class="container">
+    <h1> Gestion de Categorias</h1>
+
+    <p>
+        <a asp-action="Create" class="btn btn-success">
+            ➕ Crear Nueva Categoría
+        </a>
+        <a href="/Productos" class="btn btn-primary"> Gestionar Productos</a>
+        <a href="/" class="btn btn-secondary">🏠 Ir al Dashboard</a>
+    </p>
+
+    <!-- Bloque de las estadisticas -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Total Categorias</h5>
+                    <p class="card-text h3">@Model.Count()</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Categorias con Productos</h5>
+                    <p class="card-text h3">@Model.Count(c => c.Productos.Any())</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-info">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Total Productos</h5>
+                    <p class="card-text h3">@Model.Sum(c => c.Productos.Count)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bloque de la tabla de Categorias -->
+    <div class="card">
+        <div class="card-header">
+            <h5>Lista de Categorias</h5>
+        </div>
+        <div class="card-body">
+            @if (!Model.Any())
+            {
+                <div class="alert alert-info text-center">
+                    <h5> No hay categorias creadas</h5>
+                    <p>Comienza creando tu primera categoria para organizar tus productos.</p>
+                    <a asp-action="Create" class="btn btn-success">Crear Primera Categoria</a>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Descripcion</th>
+                                <th>Fecha Creación</th>
+                                <th>Productos</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@Html.DisplayFor(modelItem => item.Nombre)</strong>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.Descripcion))
+                                        {
+                                            @Html.DisplayFor(modelItem => item.Descripcion)
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Sin descripcion</span>
+                                        }
+                                    </td>
+                                    <td>@item.FechaCreacion.ToString("dd/MM/yyyy")</td>
+                                    <td>
+                                        <span class="badge bg-primary">@item.Productos.Count productos</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm">
+                                                 Editar
+                                            </a>
+                                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-info btn-sm">
+                                                 Ver
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm">
+                                                 Eliminar
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

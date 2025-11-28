@@ -1,0 +1,136 @@
+﻿@model TacuazinGO.Models.Categoria
+
+@{
+    ViewData["Title"] = "Detalles de la Categoría";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h4> Detalles de esta Categoria</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Bloque de Informacion Principal -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <h3 class="text-primary">@Model.Nombre</h3>
+                            <span class="badge bg-primary fs-6">@Model.Productos.Count productos</span>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span class="badge bg-secondary fs-6">Creada: @Model.FechaCreacion.ToString("dd/MM/yyyy")</span>
+                        </div>
+                    </div>
+
+                    <!-- estas son las estadisticass -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card text-center border-primary">
+                                <div class="card-body">
+                                    <h5 class="card-title text-primary"> Total Productos</h5>
+                                    <p class="card-text h4">@Model.Productos.Count</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card text-center border-success">
+                                <div class="card-body">
+                                    <h5 class="card-title text-success"> Fecha Creacion</h5>
+                                    <p class="card-text h6">@Model.FechaCreacion.ToString("dd/MM/yyyy")</p>
+                                    <small class="text-muted">@Model.FechaCreacion.ToString("hh:mm tt")</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--Bloque de la informacion detallada -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5> Información Detallada</h5>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row">
+                                <dt class="col-sm-4">ID de la Categoria:</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge bg-dark">#@Model.Id</span>
+                                </dd>
+
+                                <dt class="col-sm-4">Nombre:</dt>
+                                <dd class="col-sm-8">@Model.Nombre</dd>
+
+                                <dt class="col-sm-4">Descripción:</dt>
+                                <dd class="col-sm-8">
+                                    @if (!string.IsNullOrEmpty(Model.Descripcion))
+                                    {
+                                        @Model.Descripcion
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Sin descripcion</span>
+                                    }
+                                </dd>
+
+                                <dt class="col-sm-4">Fecha de Creacion:</dt>
+                                <dd class="col-sm-8">@Model.FechaCreacion.ToString("dd/MM/yyyy hh:mm tt")</dd>
+
+                                <dt class="col-sm-4">Productos Asociados:</dt>
+                                <dd class="col-sm-8">
+                                    <span class="h5 text-info">@Model.Productos.Count productos</span>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <!-- Lista de Productos (solo si hay) -->
+                    @if (Model.Productos.Any())
+                    {
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5> Productos en esta Categoria</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Producto</th>
+                                                <th>Precio</th>
+                                                <th>Stock</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var producto in Model.Productos)
+                                            {
+                                                <tr>
+                                                    <td>@producto.Nombre</td>
+                                                    <td>$@producto.Precio.ToString("N2")</td>
+                                                    <td>@producto.Stock</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!--acciones (bloque de    1.ver   2.editar  3.eliminar ) -->
+                    <div class="mt-4">
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Index" class="btn btn-secondary me-md-2">
+                                 Volver a la Lista
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary me-md-2">
+                                 Editar Categoría
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                                 Eliminar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
